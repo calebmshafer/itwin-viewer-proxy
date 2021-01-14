@@ -55,17 +55,17 @@ async function viewModel() {
     authConfig: {
       getUserManagerFunction: getUserManager,
     },
-    backend: {
-      customBackend: {
-        rpcParams: {
-          info: {
-            title: "general-purpose-imodeljs-backend",
-            version: "v2.0"
-          },
-          uriPrefix: "http://localhost:3001" // This must match the backend
-        }
-      }
-    }
+    // backend: {
+    //   customBackend: {
+    //     rpcParams: {
+    //       info: {
+    //         title: "general-purpose-imodeljs-backend",
+    //         version: "v2.0"
+    //       },
+    //       uriPrefix: "http://localhost:3001" // This must match the backend
+    //     }
+    //   }
+    // }
   });
   if (viewer) {
     viewer.load(
