@@ -16,7 +16,7 @@ export class CustomExpressServer {
 
   constructor(client: AuthClient) {
     this._client = client;
-   }
+  }
 
   protected _configureMiddleware() {
     this._app.use(express.text({ limit: "5mb" }));
@@ -26,6 +26,8 @@ export class CustomExpressServer {
   protected _configureHeaders() {
     // enable CORS for all apis
     this._app.all("/**", (_req, res, next) => {
+      console.log('request', _req.method, _req.url, _req.body)
+
       // The configuration matches 'BentleyCloudRpcConfiguration'
       res.header("Access-Control-Allow-Origin", "*");
       res.header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
@@ -35,6 +37,14 @@ export class CustomExpressServer {
   }
 
   protected _configureRoutes() {
+    this._app.get('/metadata-url', async (req, res) => {
+      const {data} = await Axios.get('https://imsoidc.bentley.com/.well-known/openid-configuration')
+
+      // const dataReplaced = JSON.stringify(data).replace(/https:\/\/imsoidc.bentley.com/gm, 'https://b7b172f6da82.ngrok.io')
+
+      // res.set('Content-Type', 'application/json').send(JSON.parse(dataReplaced))
+      res.set('Content-Type', 'application/json').send(data)
+    })
     this._app.post("*", async (req, res) => this.forwardPostRequest(req, res));
     this._app.get(/\/imodel\//, async (req, res) => this.forwardGetRequest(req, res));
     // for all HTTP requests, identify the server.
@@ -81,8 +91,8 @@ export class CustomExpressServer {
 
   private async forwardPostRequest(req: express.Request , res: express.Response) {
     try {
-      console.log("post request");
-      console.log(req);
+      // console.log("post request");
+      // console.log(req);
 
       // Get the x-correlation-id to pass along if it exists
       const ctx = await this.createContext(req.headers["x-correlation-id"]);

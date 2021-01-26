@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 
 import AuthorizationClient from "./AuthorizationClient";
 import { Header } from "./Header";
+import { oidcClient } from './CustomOidcClient';
 
 const App: React.FC = () => {
   const [isAuthorized, setIsAuthorized] = useState(
@@ -68,29 +69,31 @@ const App: React.FC = () => {
         loggedIn={isAuthorized}
         handleLogout={onLogoutClick}
       />
-      {isLoggingIn ? (
+      {/* {isLoggingIn ? (
         <span>"Logging in...."</span>
       ) : (
-        isAuthorized && (
+        isAuthorized && ( */}
           <Viewer
-            contextId={process.env.REACT_APP_TEST_CONTEXT_ID ?? ""}
-            iModelId={process.env.REACT_APP_TEST_IMODEL_ID ?? ""}
-            authConfig={{ oidcClient: AuthorizationClient.oidcClient }}
-            // backend={{
-            //   customBackend: {
-            //     rpcParams: {
-            //       info: {
-            //         title: "general-purpose-imodeljs-backend",
-            //         version: "v2.0"
-            //       },
-            //       uriPrefix: "http://localhost:3001" // This must match the backend
-            //     }
-            //   },
-            //   buddiRegion: 102
-            // }}
+            // contextId="8d8e9307-63b5-46fd-8286-7872dd04f0ce"
+            // iModelId="81a62730-f6b4-455e-93e6-b42efec23156"
+            contextId="1bff8c44-3196-4231-b8f6-66cf6dacd45b" // personal
+            iModelId="71adc398-33bd-4ca9-9dec-fa6a74729bf6" // personal
+            authConfig={{ getUserManagerFunction: oidcClient.getUserManager }}
+            backend={{
+              customBackend: {
+                rpcParams: {
+                  info: {
+                    title: "general-purpose-imodeljs-backend",
+                    version: "v2.0"
+                  },
+                  uriPrefix: "http://localhost:3001",
+                }
+              },
+              buddiRegion: 102,
+            }}
           />
-        )
-      )}
+        {/* ) */}
+      {/* )} */}
     </div>
   );
 };
