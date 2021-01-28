@@ -37,14 +37,23 @@ export class CustomExpressServer {
   }
 
   protected _configureRoutes() {
+    this._app.get('/authorization_endpoint', async (req, res) => {
+      console.log('authorization endpoint')
+
+      res.send('')
+    })
+
     this._app.get('/metadata-url', async (req, res) => {
       // const {data} = await Axios.get('https://imsoidc.bentley.com/.well-known/openid-configuration')
 
       // const dataReplaced = JSON.stringify(data).replace(/https:\/\/imsoidc.bentley.com/gm, 'https://b7b172f6da82.ngrok.io')
 
       // res.set('Content-Type', 'application/json').send(JSON.parse(dataReplaced))
-      res.set('Content-Type', 'application/json').send({})
+      res.set('Content-Type', 'application/json').send({
+        authorization_endpoint: 'http://localhost:3001/authorization_endpoint'
+      })
     })
+    
     this._app.post("*", async (req, res) => this.forwardPostRequest(req, res));
     this._app.get(/\/imodel\//, async (req, res) => this.forwardGetRequest(req, res));
     // for all HTTP requests, identify the server.

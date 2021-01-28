@@ -71,7 +71,8 @@ const App: React.FC = () => {
             // iModelId="81a62730-f6b4-455e-93e6-b42efec23156"
             contextId="1bff8c44-3196-4231-b8f6-66cf6dacd45b" // personal
             iModelId="71adc398-33bd-4ca9-9dec-fa6a74729bf6" // personal
-            authConfig={{ oidcClient: NoSignInIAuthClient.oidcClient }}
+            authConfig={{ oidcClient: NoSignInIAuthClient.oidcClient }} 
+            // authConfig={{ getUserManagerFunction: () => NoSignInIAuthClient.userManager}}
             backend={{
               customBackend: {
                 rpcParams: {

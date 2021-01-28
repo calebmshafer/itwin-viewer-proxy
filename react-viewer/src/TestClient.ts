@@ -1,75 +1,35 @@
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/itwin-client";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { FrontendAuthorizationClient, BrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { UserManager, WebStorageStateStore } from 'oidc-client';
+import { ProxyClient } from './ProxyClient';
 
-export class NoSignInIAuthClient implements FrontendAuthorizationClient {
-  public readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-  protected _accessToken?: AccessToken;
-
+export class NoSignInIAuthClient {
   private static _oidcClient: FrontendAuthorizationClient;
+  private static _userManager: UserManager
 
   public static get oidcClient(): FrontendAuthorizationClient {
+    if(!this._oidcClient) {
+      this._oidcClient = new ProxyClient()
+    }
+
     return this._oidcClient;
   }
 
-  constructor() {
-    this.onUserStateChanged = new BeEvent();
-  }
-
-  public async signIn(requestContext?: ClientRequestContext): Promise<void> {
-    if (requestContext) {
-      requestContext.enter();
-    }
-    await this.getAccessToken();
-  }
-  public async signOut(requestContext?: ClientRequestContext): Promise<void> {
-    if (requestContext) {
-      requestContext.enter();
-    }
-    this._accessToken = undefined;
-  }
-
-  public get isAuthorized(): boolean {
-    return true; // this.hasSignedIn;
-  }
-
-  public get hasExpired(): boolean {
-    return !this._accessToken;
-  }
-
-  public get hasSignedIn(): boolean {
-    return true; // !!this._accessToken;
-  }
-
-  public async generateTokenString(userURL: string, requestContext?: ClientRequestContext) {
-    if (requestContext) {
-      requestContext.enter();
+  public static get userManager(): UserManager {
+    if(!this._userManager) {
+      this._userManager = new UserManager({
+        client_id: "xxxxxxx",
+        // userStore: new WebStorageStateStore({ store: localStorage }),
+        silent_redirect_uri: 'http://localhost:3001/silent-signin',
+        metadataUrl: 'http://localhost:3001/metadata-url',
+        // redirect_uri: 'http://localhost:3000/signin-callback',
+        // post_logout_redirect_uri: 'http://localhost:3000/logout',
+        authority: 'http://localhost:3001/',
+      })
     }
 
-    // const response = await fetch(userURL);
-    // const body = await response.json();
-    const tokenJson = {
-      // ...await body,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      _userInfo: { id: "MockId" },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      _tokenString: "",
-    };
-    this._accessToken = AccessToken.fromJson(tokenJson);
-
-    // Automatically renew if session exceeds 55 minutes.
-    // setTimeout(() => {
-    //   this.generateTokenString(userURL)
-    //     .catch((error) => {
-    //       throw new BentleyError(AuthStatus.Error, error);
-    //     });
-    // }, (1000 * 60 * 55));
+    return this._userManager
   }
 
-  public async getAccessToken(): Promise<AccessToken> {
-    if (!this._accessToken)
-      throw new BentleyError(AuthStatus.Error, "Cannot get access token");
-
-    return this._accessToken;
-  }
 }
