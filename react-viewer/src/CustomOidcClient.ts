@@ -4,22 +4,25 @@ export class OidcClient {
   private _userManager: UserManager;
 
   constructor() {
-    // const userSettings: UserManagerSettings = {
-    //   client_id: "xxxxxxx",
-    //   userStore: new WebStorageStateStore({ store: localStorage }),
-    //   silent_redirect_uri: 'http://localhost:3001/silent-signin',
-    //   metadataUrl: 'http://localhost:3001/metadata-url'
-    // };
-
     const userSettings: UserManagerSettings = {
-      client_id: "imodeljs-spa-samples-2686",
+      client_id: "xxxxxxx",
       userStore: new WebStorageStateStore({ store: localStorage }),
-      scope: 'openid email profile organization imodelhub context-registry-service:read-only product-settings-service general-purpose-imodeljs-backend imodeljs-router urlps-third-party',
-      response_type: 'code',
+      silent_redirect_uri: 'http://localhost:3001/silent-signin',
+      metadataUrl: 'http://localhost:3001/metadata-url',
       redirect_uri: 'http://localhost:3000/signin-callback',
       post_logout_redirect_uri: 'http://localhost:3000/logout',
-      authority: 'https://imsoidc.bentley.com',
+      authority: 'http://localhost:3001/',
     };
+
+    // const userSettings: UserManagerSettings = {
+    //   client_id: "imodeljs-spa-samples-2686",
+    //   userStore: new WebStorageStateStore({ store: localStorage }),
+    //   scope: 'openid email profile organization imodelhub context-registry-service:read-only product-settings-service general-purpose-imodeljs-backend imodeljs-router urlps-third-party',
+    //   response_type: 'code',
+    //   redirect_uri: 'http://localhost:3000/signin-callback',
+    //   post_logout_redirect_uri: 'http://localhost:3000/logout',
+    //   authority: 'https://imsoidc.bentley.com',
+    // };
     
     this._userManager = new UserManager(userSettings);
   }
@@ -30,4 +33,4 @@ export class OidcClient {
 
 }
 
-export const oidcClient = new OidcClient()
+export const oidcClient = new OidcClient();

@@ -3,28 +3,26 @@ import "./App.scss";
 import { Viewer } from "@bentley/itwin-viewer-react";
 import React, { useEffect, useState } from "react";
 
-import AuthorizationClient from "./AuthorizationClient";
-import { Header } from "./Header";
-import { oidcClient } from './CustomOidcClient';
+import { NoSignInIAuthClient } from "./TestClient";
 
 const App: React.FC = () => {
   const [isAuthorized, setIsAuthorized] = useState(
-    AuthorizationClient.oidcClient
-      ? AuthorizationClient.oidcClient.isAuthorized
+    NoSignInIAuthClient.oidcClient
+      ? NoSignInIAuthClient.oidcClient.isAuthorized
       : false
   );
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
     const initOidc = async () => {
-      if (!AuthorizationClient.oidcClient) {
-        await AuthorizationClient.initializeOidc();
-      }
+      // if (!AuthorizationClient.oidcClient) {
+      //   await AuthorizationClient.initializeOidc();
+      // }
 
       try {
         // attempt silent signin
-        await AuthorizationClient.signInSilent();
-        setIsAuthorized(AuthorizationClient.oidcClient.isAuthorized);
+        // await AuthorizationClient.signInSilent();
+        // setIsAuthorized(AuthorizationClient.oidcClient.isAuthorized);
       } catch (error) {
         // swallow the error. User can click the button to sign in
       }
@@ -51,24 +49,19 @@ const App: React.FC = () => {
     }
   }, [isAuthorized, isLoggingIn]);
 
-  const onLoginClick = async () => {
-    setIsLoggingIn(true);
-    await AuthorizationClient.signIn();
-  };
+  // const onLoginClick = async () => {
+  //   setIsLoggingIn(true);
+  //   // await AuthorizationClient.signIn();
+  // };
 
-  const onLogoutClick = async () => {
-    setIsLoggingIn(false);
-    await AuthorizationClient.signOut();
-    setIsAuthorized(false);
-  };
+  // const onLogoutClick = async () => {
+  //   setIsLoggingIn(false);
+  //   // await AuthorizationClient.signOut();
+  //   setIsAuthorized(false);
+  // };
 
   return (
     <div>
-      <Header
-        handleLogin={onLoginClick}
-        loggedIn={isAuthorized}
-        handleLogout={onLogoutClick}
-      />
       {/* {isLoggingIn ? (
         <span>"Logging in...."</span>
       ) : (
@@ -78,7 +71,7 @@ const App: React.FC = () => {
             // iModelId="81a62730-f6b4-455e-93e6-b42efec23156"
             contextId="1bff8c44-3196-4231-b8f6-66cf6dacd45b" // personal
             iModelId="71adc398-33bd-4ca9-9dec-fa6a74729bf6" // personal
-            authConfig={{ getUserManagerFunction: oidcClient.getUserManager }}
+            authConfig={{ oidcClient: NoSignInIAuthClient.oidcClient }}
             backend={{
               customBackend: {
                 rpcParams: {
