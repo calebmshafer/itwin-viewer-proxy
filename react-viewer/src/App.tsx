@@ -4,6 +4,7 @@ import { Viewer } from "@bentley/itwin-viewer-react";
 import React, { useEffect, useState } from "react";
 
 import { NoSignInIAuthClient } from "./TestClient";
+import { BCCloudRpcProtocol } from "./RpcProtocol";
 
 const App: React.FC = () => {
   const [isAuthorized, setIsAuthorized] = useState(
@@ -71,6 +72,7 @@ const App: React.FC = () => {
             // iModelId="81a62730-f6b4-455e-93e6-b42efec23156"
             contextId="1bff8c44-3196-4231-b8f6-66cf6dacd45b" // personal
             iModelId="71adc398-33bd-4ca9-9dec-fa6a74729bf6" // personal
+            changeSetId="0"
             authConfig={{ oidcClient: NoSignInIAuthClient.oidcClient }} 
             // authConfig={{ getUserManagerFunction: () => NoSignInIAuthClient.userManager}}
             backend={{
@@ -81,6 +83,7 @@ const App: React.FC = () => {
                     version: "v2.0"
                   },
                   uriPrefix: "http://localhost:3001",
+                  protocol: BCCloudRpcProtocol,
                 }
               },
               buddiRegion: 102,
