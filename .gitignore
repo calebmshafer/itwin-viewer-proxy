@@ -1,4 +1,4 @@
 node_modules
 lib
 
-proxy/.env
+.env.local
