@@ -6,29 +6,12 @@ import React, { useEffect, useState } from "react";
 import { NoSignInIAuthClient } from "./TestClient";
 
 const App: React.FC = () => {
-  const [isAuthorized, setIsAuthorized] = useState(
+  const [isAuthorized,] = useState(
     NoSignInIAuthClient.oidcClient
       ? NoSignInIAuthClient.oidcClient.isAuthorized
       : false
   );
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-
-  useEffect(() => {
-    const initOidc = async () => {
-      // if (!AuthorizationClient.oidcClient) {
-      //   await AuthorizationClient.initializeOidc();
-      // }
-
-      try {
-        // attempt silent signin
-        // await AuthorizationClient.signInSilent();
-        // setIsAuthorized(AuthorizationClient.oidcClient.isAuthorized);
-      } catch (error) {
-        // swallow the error. User can click the button to sign in
-      }
-    };
-    initOidc().catch((error) => console.error(error));
-  }, []);
 
   useEffect(() => {
     if (!process.env.REACT_APP_TEST_CONTEXT_ID) {
@@ -49,44 +32,25 @@ const App: React.FC = () => {
     }
   }, [isAuthorized, isLoggingIn]);
 
-  // const onLoginClick = async () => {
-  //   setIsLoggingIn(true);
-  //   // await AuthorizationClient.signIn();
-  // };
-
-  // const onLogoutClick = async () => {
-  //   setIsLoggingIn(false);
-  //   // await AuthorizationClient.signOut();
-  //   setIsAuthorized(false);
-  // };
-
   return (
     <div>
-      {/* {isLoggingIn ? (
-        <span>"Logging in...."</span>
-      ) : (
-        isAuthorized && ( */}
-          <Viewer
-            // contextId="8d8e9307-63b5-46fd-8286-7872dd04f0ce"
-            // iModelId="81a62730-f6b4-455e-93e6-b42efec23156"
-            contextId="1bff8c44-3196-4231-b8f6-66cf6dacd45b" // personal
-            iModelId="71adc398-33bd-4ca9-9dec-fa6a74729bf6" // personal
-            authConfig={{ oidcClient: NoSignInIAuthClient.oidcClient }}
-            backend={{
-              customBackend: {
-                rpcParams: {
-                  info: {
-                    title: "general-purpose-imodeljs-backend",
-                    version: "v2.0"
-                  },
-                  uriPrefix: "http://localhost:3001",
-                }
+      <Viewer
+        contextId="11b074ae-1859-4506-bc62-1eeda2ce11a8"
+        iModelId="b8c5ac92-9d39-4b93-81b7-43f19a98f4dd"
+        changeSetId="93b6c5340d2cc99534afeb97d03227ce75c7734a" //
+        authConfig={{ oidcClient: NoSignInIAuthClient.oidcClient }}
+        backend={{
+          customBackend: {
+            rpcParams: {
+              info: {
+                title: "general-purpose-imodeljs-backend",
+                version: "v2.0"
               },
-              buddiRegion: 102,
-            }}
-          />
-        {/* ) */}
-      {/* )} */}
+              uriPrefix: "http://localhost:3001",
+            }
+          },
+        }}
+      />
     </div>
   );
 };

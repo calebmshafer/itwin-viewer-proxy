@@ -102,32 +102,33 @@ export class CustomExpressServer {
       ctx.enter();
       console.log(itwinUrl)
 
-      // The frontend client should be configured to use the general-purpose-imodeljs-backend. We can swap everything prior to that in the url
-      // with the new iTwin Platform url gathered above.
-
-      // swap the incoming token with the client credentials token
-      req.headers.authorization = (await this._client.getAccessToken()).toTokenString();
-
-      const newUrl = new URL(req.url, itwinUrl);
-      // const newUrl = new URL(`${itwinUrl}${req.url}`);
+      // The frontend client should be configured to use the general-purpose-imodeljs-backend. Then everything before that will be swapped out
+      // prior it is sent to the new iTwin Platform url gathered above.
+      //
+      // e.g. '/general-purpose-imodeljs-backend/v2.0/mode/1/context/{GUID}/imodel/{GUID}/changeset/{id}/{operation}'
+    
+      const newUrl = new URL(`${itwinUrl}${req.url}`);
       console.log(`${newUrl.toString()}`);
       // send request to iTwin Platform
-      const forwardRes = await Axios.post(newUrl.toString(), req.body, {
+      const forwardRes = await Axios.post(newUrl.toString(), JSON.parse(req.body), {
         headers: {
-          Authorization: (await this._client.getAccessToken()).toTokenString(),
+          authorization: (await this._client.getAccessToken()).toTokenString(), // use a new client credentials token for the request
+
+          // Forward a few headers from the incoming request with the request to the iTwin Platform
           "x-application-version": req.headers["x-application-version"] as string,
-          "x-application-id":req.headers["x-application-id"] as string,
+          "x-application-id": req.headers["x-application-id"] as string,
           "x-correlation-id": req.headers["x-correlation-id"],
           "x-session-id": req.headers["x-session-id"] as string,
         },
         params: JSON.stringify(req.params),
+        responseType: "text",
       });
 
-      // console.log(forwardRes);
+      console.log(forwardRes);
       res.send(forwardRes);
     } catch (err) {
-      // console.log(err);
-      console.log("here");
+      console.log(err);
+      // console.log("here");
       res.sendStatus(500);
     }
 

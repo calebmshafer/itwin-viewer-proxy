@@ -2,6 +2,7 @@ import { AuthStatus, BeEvent, BentleyError, ClientRequestContext } from "@bentle
 import { AccessToken } from "@bentley/itwin-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 
+/** This client defines the interfaces  */
 export class NoSignInIAuthClient implements FrontendAuthorizationClient {
   public readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
   protected _accessToken?: AccessToken;
@@ -9,11 +10,15 @@ export class NoSignInIAuthClient implements FrontendAuthorizationClient {
   private static _oidcClient: FrontendAuthorizationClient;
 
   public static get oidcClient(): FrontendAuthorizationClient {
+    if (undefined !== this._oidcClient)
+      return this._oidcClient;
+    this._oidcClient = new NoSignInIAuthClient();
     return this._oidcClient;
   }
 
   constructor() {
     this.onUserStateChanged = new BeEvent();
+    this.generateTokenString();
   }
 
   public async signIn(requestContext?: ClientRequestContext): Promise<void> {
@@ -23,14 +28,14 @@ export class NoSignInIAuthClient implements FrontendAuthorizationClient {
     await this.getAccessToken();
   }
   public async signOut(requestContext?: ClientRequestContext): Promise<void> {
-    if (requestContext) {
+    if (requestContext)
       requestContext.enter();
-    }
+
     this._accessToken = undefined;
   }
 
   public get isAuthorized(): boolean {
-    return true; // this.hasSignedIn;
+    return true;
   }
 
   public get hasExpired(): boolean {
@@ -38,38 +43,22 @@ export class NoSignInIAuthClient implements FrontendAuthorizationClient {
   }
 
   public get hasSignedIn(): boolean {
-    return true; // !!this._accessToken;
+    return true;
   }
 
-  public async generateTokenString(userURL: string, requestContext?: ClientRequestContext) {
-    if (requestContext) {
-      requestContext.enter();
-    }
-
-    // const response = await fetch(userURL);
-    // const body = await response.json();
+  public async generateTokenString() {
     const tokenJson = {
-      // ...await body,
       // eslint-disable-next-line @typescript-eslint/naming-convention
       _userInfo: { id: "MockId" },
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      _tokenString: "",
+      _tokenString: "Bearer t",
     };
     this._accessToken = AccessToken.fromJson(tokenJson);
-
-    // Automatically renew if session exceeds 55 minutes.
-    // setTimeout(() => {
-    //   this.generateTokenString(userURL)
-    //     .catch((error) => {
-    //       throw new BentleyError(AuthStatus.Error, error);
-    //     });
-    // }, (1000 * 60 * 55));
   }
 
   public async getAccessToken(): Promise<AccessToken> {
     if (!this._accessToken)
       throw new BentleyError(AuthStatus.Error, "Cannot get access token");
-
     return this._accessToken;
   }
 }
