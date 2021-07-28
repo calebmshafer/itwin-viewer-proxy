@@ -37,14 +37,6 @@ export class CustomExpressServer {
   }
 
   protected _configureRoutes() {
-    this._app.get('/metadata-url', async (req, res) => {
-      // const {data} = await Axios.get('https://imsoidc.bentley.com/.well-known/openid-configuration')
-
-      // const dataReplaced = JSON.stringify(data).replace(/https:\/\/imsoidc.bentley.com/gm, 'https://b7b172f6da82.ngrok.io')
-
-      // res.set('Content-Type', 'application/json').send(JSON.parse(dataReplaced))
-      res.set('Content-Type', 'application/json').send({})
-    })
     this._app.post("*", async (req, res) => this.forwardPostRequest(req, res));
     this._app.get(/\/imodel\//, async (req, res) => this.forwardGetRequest(req, res));
     // for all HTTP requests, identify the server.
@@ -87,48 +79,56 @@ export class CustomExpressServer {
     this._itwinUrl = await urlClient.discoverUrl(ctx, "iModelJsOrchestrator.K8S", undefined);
     ctx.enter();
     return this._itwinUrl;
+
+    // return "http://localhost:3002";
   }
 
   private async forwardPostRequest(req: express.Request , res: express.Response) {
     try {
-      // console.log("post request");
-      // console.log(req);
-
       // Get the x-correlation-id to pass along if it exists
       const ctx = await this.createContext(req.headers["x-correlation-id"]);
       ctx.enter();
 
       const itwinUrl = await this.getNewUrl(ctx);
       ctx.enter();
-      console.log(itwinUrl)
 
       // The frontend client should be configured to use the general-purpose-imodeljs-backend. Then everything before that will be swapped out
       // prior it is sent to the new iTwin Platform url gathered above.
       //
       // e.g. '/general-purpose-imodeljs-backend/v2.0/mode/1/context/{GUID}/imodel/{GUID}/changeset/{id}/{operation}'
-    
+
+      console.log(JSON.stringify(req.params));
+      console.log("body")
+      console.log(JSON.parse(req.body));
+      console.log("headers")
+      console.log(JSON.stringify(req.headers));
+
       const newUrl = new URL(`${itwinUrl}${req.url}`);
       console.log(`${newUrl.toString()}`);
       // send request to iTwin Platform
       const forwardRes = await Axios.post(newUrl.toString(), JSON.parse(req.body), {
         headers: {
-          authorization: (await this._client.getAccessToken()).toTokenString(), // use a new client credentials token for the request
+          // ...req.headers,
+          authorization: ctx.accessToken.toTokenString(), // use a new client credentials token for the request
 
           // Forward a few headers from the incoming request with the request to the iTwin Platform
           "x-application-version": req.headers["x-application-version"] as string,
           "x-application-id": req.headers["x-application-id"] as string,
           "x-correlation-id": req.headers["x-correlation-id"],
           "x-session-id": req.headers["x-session-id"] as string,
+          "accept": req.headers["accept"] as string,
+          "accept-encoding": req.headers["accept-encoding"] as string,
+          "cache-control": req.headers["cache-control"] as string,
+          "connection": req.headers["connection"] as string,
+          "content-length": req.headers["content-length"] as string,
+          "content-type": req.headers["content-type"] as string,
         },
-        params: JSON.stringify(req.params),
-        responseType: "text",
       });
 
-      console.log(forwardRes);
+      // console.log(forwardRes);
       res.send(forwardRes);
     } catch (err) {
       console.log(err);
-      // console.log("here");
       res.sendStatus(500);
     }
 
@@ -144,7 +144,7 @@ export class CustomExpressServer {
     const itwinUrl = await this.getNewUrl(ctx);
     ctx.enter();
 
-    // The frontend client should be configured to use the general-purpose-imodeljs-backend.  We can swap everything prior to that in the url
+    // The frontend client should be configured to use the general-purpose-imodeljs-backend. We can swap everything prior to that in the url
     // with the new iTwin Platform url gathered above.
     const newUrl = `${itwinUrl}${req.baseUrl}`;
     console.log(newUrl);
