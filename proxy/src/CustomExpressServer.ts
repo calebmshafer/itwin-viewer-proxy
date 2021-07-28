@@ -97,73 +97,60 @@ export class CustomExpressServer {
       //
       // e.g. '/general-purpose-imodeljs-backend/v2.0/mode/1/context/{GUID}/imodel/{GUID}/changeset/{id}/{operation}'
 
-      console.log(JSON.stringify(req.params));
-      console.log("body")
-      console.log(JSON.parse(req.body));
-      console.log("headers")
-      console.log(JSON.stringify(req.headers));
+      const { host, referrer, authorization, ...incomingHeaders } = req.headers;
 
-      const newUrl = new URL(`${itwinUrl}${req.url}`);
-      console.log(`${newUrl.toString()}`);
       // send request to iTwin Platform
-      const forwardRes = await Axios.post(newUrl.toString(), JSON.parse(req.body), {
-        headers: {
-          // ...req.headers,
-          authorization: ctx.accessToken.toTokenString(), // use a new client credentials token for the request
-
-          // Forward a few headers from the incoming request with the request to the iTwin Platform
-          "x-application-version": req.headers["x-application-version"] as string,
-          "x-application-id": req.headers["x-application-id"] as string,
-          "x-correlation-id": req.headers["x-correlation-id"],
-          "x-session-id": req.headers["x-session-id"] as string,
-          "accept": req.headers["accept"] as string,
-          "accept-encoding": req.headers["accept-encoding"] as string,
-          "cache-control": req.headers["cache-control"] as string,
-          "connection": req.headers["connection"] as string,
-          "content-length": req.headers["content-length"] as string,
-          "content-type": req.headers["content-type"] as string,
-        },
-      });
+      const forwardRes = await Axios.post(
+        `${itwinUrl}${req.url}`,
+        req.body,
+        {
+          headers: {
+            // Forward a few headers from the incoming request with the request to the iTwin Platform
+            ...incomingHeaders,
+            authorization: ctx.accessToken.toTokenString(), // use a new client credentials token for the request
+          },
+        }
+      );
 
       // console.log(forwardRes);
-      res.send(forwardRes);
+      res.send(forwardRes.data);
     } catch (err) {
       console.log(err);
       res.sendStatus(500);
     }
-
-    // forward response back to the client
   }
 
   // parse the incoming request and swap it with the appropriate iTwin Platform url
   private async forwardGetRequest(req: express.Request , res: express.Response) {
+    try {
     // Get the x-correlation-id to pass along if it exists
-    const ctx = await this.createContext(req.headers["x-correlation-id"]);
-    ctx.enter();
+      const ctx = await this.createContext(req.headers["x-correlation-id"]);
+      ctx.enter();
 
-    const itwinUrl = await this.getNewUrl(ctx);
-    ctx.enter();
+      const itwinUrl = await this.getNewUrl(ctx);
+      ctx.enter();
 
-    // The frontend client should be configured to use the general-purpose-imodeljs-backend. We can swap everything prior to that in the url
-    // with the new iTwin Platform url gathered above.
-    const newUrl = `${itwinUrl}${req.baseUrl}`;
-    console.log(newUrl);
+      // The frontend client should be configured to use the general-purpose-imodeljs-backend. We can swap everything prior to that in the url
+      // with the new iTwin Platform url gathered above.
 
-    // swap the incoming token with the client credentials token
-    req.headers.authorization = (await this._client.getAccessToken()).toTokenString();
+      const { host, referrer, authorization, ...incomingHeaders } = req.headers;
 
-    // send request to iTwin Platform
-    const forwardRes = await Axios.get(itwinUrl, {
-      url: req.baseUrl,
-      headers: {
-        authorization: (await this._client.getAccessToken()).toTokenString(),
-      },
-      params: req.params,
-      data: req.body,
-    });
+      // send request to iTwin Platform
+      const forwardRes = await Axios.get(`${itwinUrl}${req.baseUrl}`, {
+        url: req.baseUrl,
+        data: req.body,
+        headers: {
+          // Forward a few headers from the incoming request with the request to the iTwin Platform
+          ...incomingHeaders,
+          authorization: ctx.accessToken.toTokenString(), // use a new client credentials token for the request
+        },
+      });
 
-    // console.log(forwardRes);
-
-    // forward response back to the client
+      // console.log(forwardRes);
+      res.send(forwardRes.data);
+    } catch (err) {
+      console.log(err);
+      res.sendStatus(500);
+    }
   }
 }
