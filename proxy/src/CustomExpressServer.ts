@@ -112,6 +112,10 @@ export class CustomExpressServer {
         }
       );
 
+      if (typeof forwardRes.data === "string") {
+        res.send(JSON.stringify(forwardRes.data));
+      }
+
       // console.log(forwardRes);
       res.send(forwardRes.data);
     } catch (err) {
