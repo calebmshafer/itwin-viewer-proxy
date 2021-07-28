@@ -4,7 +4,7 @@ import * as express from "express";
 import { Server as HttpServer } from "http";
 import { AuthorizedClientRequestContext, UrlDiscoveryClient } from "@bentley/itwin-client";
 import { AuthClient} from "./AuthClient";
-import Axios, { AxiosRequestConfig } from "axios";
+import Axios from "axios";
 
 /** This is a fork of the iModel.js Express Server in order to handle the same requests but forward them to a hosted iModel.js
  * backend in the iTwin Platform.
@@ -79,8 +79,6 @@ export class CustomExpressServer {
     this._itwinUrl = await urlClient.discoverUrl(ctx, "iModelJsOrchestrator.K8S", undefined);
     ctx.enter();
     return this._itwinUrl;
-
-    // return "http://localhost:3002";
   }
 
   private async forwardPostRequest(req: express.Request , res: express.Response) {
@@ -98,26 +96,20 @@ export class CustomExpressServer {
       // e.g. '/general-purpose-imodeljs-backend/v2.0/mode/1/context/{GUID}/imodel/{GUID}/changeset/{id}/{operation}'
 
       const { host, referrer, authorization, ...incomingHeaders } = req.headers;
-
-      // send request to iTwin Platform
-      const forwardRes = await Axios.post(
-        `${itwinUrl}${req.url}`,
-        req.body,
-        {
-          headers: {
-            // Forward a few headers from the incoming request with the request to the iTwin Platform
-            ...incomingHeaders,
-            authorization: ctx.accessToken.toTokenString(), // use a new client credentials token for the request
-          },
-        }
-      );
-
+      const forwardRes = await Axios.post(`${itwinUrl}${req.url}`, req.body, {
+        headers: {
+          ...incomingHeaders,
+          authorization: (await this._client.getAccessToken()).toTokenString(),
+        },
+        // params: req.params,
+      });
       if (typeof forwardRes.data === "string") {
+        res.setHeader("content-type", "text/plain");
         res.send(JSON.stringify(forwardRes.data));
+      } else {
+        res.send(forwardRes.data);
       }
-
-      // console.log(forwardRes);
-      res.send(forwardRes.data);
+      res.end();
     } catch (err) {
       console.log(err);
       res.sendStatus(500);
@@ -150,8 +142,8 @@ export class CustomExpressServer {
         },
       });
 
-      // console.log(forwardRes);
       res.send(forwardRes.data);
+      res.end();
     } catch (err) {
       console.log(err);
       res.sendStatus(500);
