@@ -4,7 +4,7 @@ import * as express from "express";
 import { Server as HttpServer } from "http";
 import { AuthorizedClientRequestContext, UrlDiscoveryClient } from "@bentley/itwin-client";
 import { AuthClient} from "./AuthClient";
-import Axios, { AxiosRequestConfig } from "axios";
+import Axios from "axios";
 
 /** This is a fork of the iModel.js Express Server in order to handle the same requests but forward them to a hosted iModel.js
  * backend in the iTwin Platform.
@@ -37,14 +37,6 @@ export class CustomExpressServer {
   }
 
   protected _configureRoutes() {
-    this._app.get('/metadata-url', async (req, res) => {
-      const {data} = await Axios.get('https://imsoidc.bentley.com/.well-known/openid-configuration')
-
-      // const dataReplaced = JSON.stringify(data).replace(/https:\/\/imsoidc.bentley.com/gm, 'https://b7b172f6da82.ngrok.io')
-
-      // res.set('Content-Type', 'application/json').send(JSON.parse(dataReplaced))
-      res.set('Content-Type', 'application/json').send(data)
-    })
     this._app.post("*", async (req, res) => this.forwardPostRequest(req, res));
     this._app.get(/\/imodel\//, async (req, res) => this.forwardGetRequest(req, res));
     // for all HTTP requests, identify the server.
@@ -91,78 +83,70 @@ export class CustomExpressServer {
 
   private async forwardPostRequest(req: express.Request , res: express.Response) {
     try {
-      // console.log("post request");
-      // console.log(req);
-
       // Get the x-correlation-id to pass along if it exists
       const ctx = await this.createContext(req.headers["x-correlation-id"]);
       ctx.enter();
 
       const itwinUrl = await this.getNewUrl(ctx);
       ctx.enter();
-      console.log(itwinUrl)
 
-      // The frontend client should be configured to use the general-purpose-imodeljs-backend. We can swap everything prior to that in the url
-      // with the new iTwin Platform url gathered above.
+      // The frontend client should be configured to use the general-purpose-imodeljs-backend. Then everything before that will be swapped out
+      // prior it is sent to the new iTwin Platform url gathered above.
+      //
+      // e.g. '/general-purpose-imodeljs-backend/v2.0/mode/1/context/{GUID}/imodel/{GUID}/changeset/{id}/{operation}'
 
-      // swap the incoming token with the client credentials token
-      req.headers.authorization = (await this._client.getAccessToken()).toTokenString();
-
-      const newUrl = new URL(req.url, itwinUrl);
-      // const newUrl = new URL(`${itwinUrl}${req.url}`);
-      console.log(`${newUrl.toString()}`);
-      // send request to iTwin Platform
-      const forwardRes = await Axios.post(newUrl.toString(), req.body, {
+      const { host, referrer, authorization, ...incomingHeaders } = req.headers;
+      const forwardRes = await Axios.post(`${itwinUrl}${req.url}`, req.body, {
         headers: {
-          Authorization: (await this._client.getAccessToken()).toTokenString(),
-          "x-application-version": req.headers["x-application-version"] as string,
-          "x-application-id":req.headers["x-application-id"] as string,
-          "x-correlation-id": req.headers["x-correlation-id"],
-          "x-session-id": req.headers["x-session-id"] as string,
+          ...incomingHeaders,
+          authorization: (await this._client.getAccessToken()).toTokenString(),
         },
-        params: JSON.stringify(req.params),
+        // params: req.params,
       });
-
-      // console.log(forwardRes);
-      res.send(forwardRes);
+      if (typeof forwardRes.data === "string") {
+        res.setHeader("content-type", "text/plain");
+        res.send(JSON.stringify(forwardRes.data));
+      } else {
+        res.send(forwardRes.data);
+      }
+      res.end();
     } catch (err) {
-      // console.log(err);
-      console.log("here");
+      console.log(err);
       res.sendStatus(500);
     }
-
-    // forward response back to the client
   }
 
   // parse the incoming request and swap it with the appropriate iTwin Platform url
   private async forwardGetRequest(req: express.Request , res: express.Response) {
+    try {
     // Get the x-correlation-id to pass along if it exists
-    const ctx = await this.createContext(req.headers["x-correlation-id"]);
-    ctx.enter();
+      const ctx = await this.createContext(req.headers["x-correlation-id"]);
+      ctx.enter();
 
-    const itwinUrl = await this.getNewUrl(ctx);
-    ctx.enter();
+      const itwinUrl = await this.getNewUrl(ctx);
+      ctx.enter();
 
-    // The frontend client should be configured to use the general-purpose-imodeljs-backend.  We can swap everything prior to that in the url
-    // with the new iTwin Platform url gathered above.
-    const newUrl = `${itwinUrl}${req.baseUrl}`;
-    console.log(newUrl);
+      // The frontend client should be configured to use the general-purpose-imodeljs-backend. We can swap everything prior to that in the url
+      // with the new iTwin Platform url gathered above.
 
-    // swap the incoming token with the client credentials token
-    req.headers.authorization = (await this._client.getAccessToken()).toTokenString();
+      const { host, referrer, authorization, ...incomingHeaders } = req.headers;
 
-    // send request to iTwin Platform
-    const forwardRes = await Axios.get(itwinUrl, {
-      url: req.baseUrl,
-      headers: {
-        authorization: (await this._client.getAccessToken()).toTokenString(),
-      },
-      params: req.params,
-      data: req.body,
-    });
+      // send request to iTwin Platform
+      const forwardRes = await Axios.get(`${itwinUrl}${req.baseUrl}`, {
+        url: req.baseUrl,
+        data: req.body,
+        headers: {
+          // Forward a few headers from the incoming request with the request to the iTwin Platform
+          ...incomingHeaders,
+          authorization: ctx.accessToken.toTokenString(), // use a new client credentials token for the request
+        },
+      });
 
-    // console.log(forwardRes);
-
-    // forward response back to the client
+      res.send(forwardRes.data);
+      res.end();
+    } catch (err) {
+      console.log(err);
+      res.sendStatus(500);
+    }
   }
 }

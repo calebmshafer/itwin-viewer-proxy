@@ -1,9 +1,11 @@
 # Examples using the iTwin Viewer
 
-This repo contains a couple different ways to use the iTwin Viewer with the iTwin Platform.
+The repository contains an example of how to use the iTwin Viewer with a custom, non-Bentley, Idp and still leverage the iTwin Platform.
 
-1. The first approach uses the iTwin Viewer from a CDN, in [cdn-viewer](./cdn-viewer/README.md). It is written in html and javascript modules without a bundler such as webpack or rollup.
+In this example, we use a proxy backend server to forward all requests using an access token generated via client credentials.
 
-    This approach requires the lowest amount of code to get started and also supports the [iTwin Embed API](#embed-api).
+There are two parts in this repo:
 
-1. The second approach uses the iTwin Viewer as a React package, in [react-viewer](./react-viewer/README.md).
+1. The first is the [proxy server](./proxy/README.md)). It is written using an Express server and demonstrates how to handle the incoming requests from an iTwin Viewer, swap out the incoming headers and prov
+
+1. The second is the iTwin Viewer, in [react-viewer](./react-viewer/README.md), configured to point to the proxy server.

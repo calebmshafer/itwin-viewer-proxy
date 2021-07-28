@@ -3,7 +3,7 @@ import { AuthClient } from "./AuthClient";
 import { CustomExpressServer } from "./CustomExpressServer";
 
 (async () => {
-  const result = dotenv.config();
+  dotenv.config();
 
   try {
     // Setup a client using the client credentials workflow.
