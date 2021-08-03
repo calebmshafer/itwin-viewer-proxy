@@ -1,10 +1,7 @@
 import { Guid } from "@bentley/bentleyjs-core";
 import * as express from "express";
 import { Server as HttpServer } from "http";
-import {
-  AuthorizedClientRequestContext,
-  UrlDiscoveryClient,
-} from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { AuthClient } from "./AuthClient";
 import Axios from "axios";
 
@@ -12,10 +9,12 @@ import Axios from "axios";
  * backend in the iTwin Platform.
  */
 export class CustomExpressServer {
-  private _itwinUrl?: string; // iTwin Platform endpoint for forwarding calls.
+  private _vizUrl: string;
   protected _app: import("express").Application = express();
 
-  constructor(private _client: AuthClient) {}
+  constructor(private _client: AuthClient, vizUrl?: string) {
+    this._vizUrl = vizUrl || "https://api.bentley.com/imodeljs";
+  }
 
   protected _configureMiddleware() {
     this._app.use(express.text({ limit: "5mb" }));
@@ -39,9 +38,9 @@ export class CustomExpressServer {
   }
 
   protected _configureRoutes() {
-    this._app.post("*", async (req, res) => this.forwardPostRequest(req, res));
+    this._app.post("*", async (req, res) => this._forwardPostRequest(req, res));
     this._app.get(/\/imodel\//, async (req, res) =>
-      this.forwardGetRequest(req, res)
+      this._forwardGetRequest(req, res)
     );
     // for all HTTP requests, identify the server.
     this._app.use("*", (_req, resp) => {
@@ -67,7 +66,7 @@ export class CustomExpressServer {
   }
 
   // Creates a new Authorized request context with the passed in correlation id
-  private async createContext(corrId: string | string[] | undefined) {
+  private async _createContext(corrId: string | string[] | undefined) {
     let currCorrelationId = corrId;
     if (!currCorrelationId) {
       currCorrelationId = Guid.createValue();
@@ -83,47 +82,32 @@ export class CustomExpressServer {
     return ctx;
   }
 
-  private async getNewUrl(
-    ctx: AuthorizedClientRequestContext
-  ): Promise<string> {
-    if (this._itwinUrl) {
-      return this._itwinUrl;
-    }
-    const urlClient = new UrlDiscoveryClient();
-    this._itwinUrl = await urlClient.discoverUrl(
-      ctx,
-      "iModelJsOrchestrator.K8S",
-      undefined
-    );
-    ctx.enter();
-    return this._itwinUrl;
-  }
-
-  private async forwardPostRequest(
+  private async _forwardPostRequest(
     req: express.Request,
     res: express.Response
   ) {
     try {
       // Get the x-correlation-id to pass along if it exists
-      const ctx = await this.createContext(req.headers["x-correlation-id"]);
+      const ctx = await this._createContext(req.headers["x-correlation-id"]);
       ctx.enter();
 
-      const itwinUrl = await this.getNewUrl(ctx);
-      ctx.enter();
-
-      // The frontend client should be configured to use the general-purpose-imodeljs-backend. Then everything before that will be swapped out
-      // prior it is sent to the new iTwin Platform url gathered above.
+      // The frontend client should be configured to use the general-purpose-imodeljs-backend and point to this proxy server.
+      // Then all incoming requests will be intercepted and forwarded to the iTwin Platform, injected with proper authorization.
       //
       // e.g. '/general-purpose-imodeljs-backend/v2.0/mode/1/context/{GUID}/imodel/{GUID}/changeset/{id}/{operation}'
 
       const { host, referrer, authorization, ...incomingHeaders } = req.headers;
-      const forwardRes = await Axios.post(`${itwinUrl}${req.url}`, req.body, {
-        headers: {
-          ...incomingHeaders,
-          authorization: ctx.accessToken.toTokenString(),
-        },
-        params: req.params,
-      });
+      const forwardRes = await Axios.post(
+        `${this._vizUrl}${req.url}`,
+        req.body,
+        {
+          headers: {
+            ...incomingHeaders,
+            authorization: ctx.accessToken.toTokenString(),
+          },
+          params: req.params,
+        }
+      );
 
       if (typeof forwardRes.data === "string") {
         res.setHeader("content-type", "text/plain");
@@ -139,23 +123,20 @@ export class CustomExpressServer {
   }
 
   // parse the incoming request and swap it with the appropriate iTwin Platform url
-  private async forwardGetRequest(req: express.Request, res: express.Response) {
+  private async _forwardGetRequest(
+    req: express.Request,
+    res: express.Response
+  ) {
     try {
       // Get the x-correlation-id to pass along if it exists
-      const ctx = await this.createContext(req.headers["x-correlation-id"]);
+      const ctx = await this._createContext(req.headers["x-correlation-id"]);
       ctx.enter();
 
-      const itwinUrl = await this.getNewUrl(ctx);
-      ctx.enter();
-
-      // The frontend client should be configured to use the general-purpose-imodeljs-backend. We can swap everything prior to that in the url
-      // with the new iTwin Platform url gathered above.
-
+      // The frontend client should be configured to use the general-purpose-imodeljs-backend and point to this proxy server.
+      // Then all incoming requests will be intercepted and forwarded to the iTwin Platform, injected with proper authorization.
       const { host, referrer, authorization, ...incomingHeaders } = req.headers;
-
       // send request to iTwin Platform
-      const forwardRes = await Axios.get(`${itwinUrl}${req.baseUrl}`, {
-        url: req.baseUrl,
+      const forwardRes = await Axios.get(`${this._vizUrl}${req.url}`, {
         headers: {
           // Forward a few headers from the incoming request with the request to the iTwin Platform
           ...incomingHeaders,

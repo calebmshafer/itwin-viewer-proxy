@@ -21,7 +21,8 @@ import { CustomExpressServer } from "./CustomExpressServer";
       process.env.CLIENT_SECRET,
       "imodelhub context-registry-service:read-only imodeljs-router general-purpose-imodeljs-backend"
     );
-    const server = new CustomExpressServer(oidcClient);
+    const visualizationUrl = process.env.VISUALIZATION_URL;
+    const server = new CustomExpressServer(oidcClient, visualizationUrl);
 
     await server.initialize(process.env.PORT ?? 3001);
     console.log("READY");
