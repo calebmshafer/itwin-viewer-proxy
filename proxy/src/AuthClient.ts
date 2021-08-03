@@ -28,7 +28,7 @@ export class AuthClient {
     private _scopes: string
   ) {}
 
-  private async getClient(): Promise<OpenIdClient> {
+  private async _getClient(): Promise<OpenIdClient> {
     if (this._client) {
       return this._client;
     }
@@ -42,7 +42,7 @@ export class AuthClient {
     return this._client;
   }
 
-  private async generateAccessToken(): Promise<AccessToken> {
+  private async _generateAccessToken(): Promise<AccessToken> {
     const scope = this._scopes;
     if (
       scope.includes("openid") ||
@@ -61,7 +61,7 @@ export class AuthClient {
     };
 
     let tokenSet: TokenSet;
-    const client = await this.getClient();
+    const client = await this._getClient();
     try {
       tokenSet = await client.grant(grantParams);
     } catch (error) {
@@ -113,6 +113,6 @@ export class AuthClient {
     if (this.isAuthorized) {
       return this._accessToken!;
     }
-    return this.generateAccessToken();
+    return this._generateAccessToken();
   }
 }
