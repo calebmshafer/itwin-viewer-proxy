@@ -1,6 +1,12 @@
 import { AccessToken } from "@bentley/itwin-client";
 import { decode } from "jsonwebtoken";
-import { GrantBody, TokenSet, ClientMetadata, Issuer, Client as OpenIdClient } from "openid-client";
+import {
+  GrantBody,
+  TokenSet,
+  ClientMetadata,
+  Issuer,
+  Client as OpenIdClient,
+} from "openid-client";
 
 /**
  * Utility to generate OIDC/OAuth tokens for agent or agent applications
@@ -15,19 +21,17 @@ import { GrantBody, TokenSet, ClientMetadata, Issuer, Client as OpenIdClient } f
 export class AuthClient {
   private _client?: OpenIdClient;
   private _accessToken?: AccessToken;
-  private _scopes: string;
-  private _clientId: string;
-  private _clientSecret: string;
 
-  constructor(clientId: string, clientSecret: string, scopes: string) {
-    this._clientId = clientId;
-    this._clientSecret = clientSecret;
-    this._scopes = scopes;
-  }
+  constructor(
+    private _clientId: string,
+    private _clientSecret: string,
+    private _scopes: string
+  ) {}
 
   private async getClient(): Promise<OpenIdClient> {
-    if (this._client)
+    if (this._client) {
       return this._client;
+    }
 
     const clientConfiguration: ClientMetadata = {
       client_id: this._clientId,
@@ -40,8 +44,16 @@ export class AuthClient {
 
   private async generateAccessToken(): Promise<AccessToken> {
     const scope = this._scopes;
-    if (scope.includes("openid") || scope.includes("email") || scope.includes("profile") || scope.includes("organization"))
-      throw new Error("Scopes for an Agent cannot include 'openid email profile organization'");
+    if (
+      scope.includes("openid") ||
+      scope.includes("email") ||
+      scope.includes("profile") ||
+      scope.includes("organization")
+    ) {
+      throw new Error(
+        "Scopes for an Agent cannot include 'openid email profile organization'"
+      );
+    }
 
     const grantParams: GrantBody = {
       grant_type: "client_credentials",
@@ -59,7 +71,11 @@ export class AuthClient {
     const userProfile = tokenSet.access_token
       ? decode(tokenSet.access_token, { json: true, complete: false })
       : undefined;
-    this._accessToken = AccessToken.fromTokenResponseJson(tokenSet, userProfile);
+
+    this._accessToken = AccessToken.fromTokenResponseJson(
+      tokenSet,
+      userProfile
+    );
     return this._accessToken;
   }
 
@@ -73,12 +89,14 @@ export class AuthClient {
 
   /** Set to true if the user has signed in, but the token has expired and requires a refresh */
   public get hasExpired(): boolean {
-    if (!this._accessToken)
+    if (!this._accessToken) {
       return false;
+    }
 
     const expiresAt = this._accessToken.getExpiresAt();
-    if (!expiresAt)
+    if (!expiresAt) {
       throw new Error("Invalid JWT");
+    }
 
     return expiresAt.getTime() - Date.now() <= 1 * 60 * 1000; // Consider 1 minute before expiry as expired
   }
@@ -92,8 +110,9 @@ export class AuthClient {
    * The token is refreshed if necessary.
    */
   public async getAccessToken(): Promise<AccessToken> {
-    if (this.isAuthorized)
+    if (this.isAuthorized) {
       return this._accessToken!;
+    }
     return this.generateAccessToken();
   }
 }

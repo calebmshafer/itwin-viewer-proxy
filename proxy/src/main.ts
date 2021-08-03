@@ -18,7 +18,7 @@ import { CustomExpressServer } from "./CustomExpressServer";
     await server.initialize(process.env.PORT ?? 3001);
     console.log("READY");
   } catch (error) {
-    // logException(error, "Unhandled exception thrown in general-purpose-imodeljs-backend");
+    console.error(error);
     process.exitCode = 1;
   }
 })();
