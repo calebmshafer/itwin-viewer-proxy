@@ -55,7 +55,7 @@ export class NoSignInIAuthClient implements FrontendAuthorizationClient {
     if (!this._accessToken) {
       this._accessToken = AccessToken.fromJson({
         userInfo: { id: "MockId" },
-        tokenString: "Bearer t",
+        tokenString: "Bearer mock",
       });
     }
   }
