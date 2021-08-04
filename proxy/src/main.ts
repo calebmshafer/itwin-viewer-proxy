@@ -1,24 +1,33 @@
-import * as dotenv from "dotenv";
+import { config } from "dotenv-flow";
+import * as dotenv_expand from "dotenv-expand";
 import { AuthClient } from "./AuthClient";
 import { CustomExpressServer } from "./CustomExpressServer";
 
 (async () => {
-  dotenv.config();
+  const envResult = config();
+  if (envResult.error) {
+    throw envResult.error;
+  }
+  dotenv_expand(envResult);
+
+  if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
+    throw new Error("CLIENT_ID and CLIENT_SECRET are required");
+  }
 
   try {
     // Setup a client using the client credentials workflow.
     const oidcClient = new AuthClient(
-      process.env.CLIENT_ID!,
-      process.env.CLIENT_SECRET!,
-      "imodelhub context-registry-service:read-only imodeljs-router general-purpose-imodeljs-backend",
+      process.env.CLIENT_ID,
+      process.env.CLIENT_SECRET,
+      "imodelhub context-registry-service:read-only imodeljs-router general-purpose-imodeljs-backend"
     );
-
-    const server = new CustomExpressServer(oidcClient);
+    const visualizationUrl = process.env.VISUALIZATION_URL;
+    const server = new CustomExpressServer(oidcClient, visualizationUrl);
 
     await server.initialize(process.env.PORT ?? 3001);
     console.log("READY");
   } catch (error) {
-    // logException(error, "Unhandled exception thrown in general-purpose-imodeljs-backend");
+    console.error(error);
     process.exitCode = 1;
   }
 })();
