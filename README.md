@@ -1,6 +1,6 @@
-# Examples using the iTwin Viewer
+# Example using the iTwin Viewer
 
-The repository contains an example of how to use the iTwin Viewer with a custom, non-Bentley, Idp and still leverage the iTwin Platform.
+The repository contains an example of how to use the iTwin Viewer with a custom, non-Bentley, Idp while leveraging the iTwin Platform.
 
 In this example, we use a proxy backend server to forward all requests using an access token generated via client credentials.
 
