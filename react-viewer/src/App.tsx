@@ -6,12 +6,27 @@ import React from "react";
 import { NoSignInIAuthClient } from "./NoSignInIAuthClient";
 
 const App: React.FC = () => {
+  if (!process.env.IMJS_CONTEXT_ID) {
+    throw new Error(
+      "Please add a valid context id to the .env file and restart the application. See the README for more information."
+    );
+  }
+  if (!process.env.IMJS_IMODEL_ID) {
+    throw new Error(
+      "Please add a valid iModel id to the .env file and restart the application. See the README for more information."
+    );
+  }
+  if (!process.env.IMJS_CHANGESET_ID) {
+    throw new Error(
+      "Please add a valid changeset id to the .env file and restart the application. See the README for more information."
+    );
+  }
+
   return (
     <Viewer
-      // Bentley Building
-      contextId="11b074ae-1859-4506-bc62-1eeda2ce11a8"
-      iModelId="e7e75883-fab6-4331-b21e-1897aa154255"
-      changeSetId="7ff0527987f6307377573cacb43617617350b7d0" // Note: If the changeSetId is not supplied, the Viewer component will make a request to the iModelHub that does not go through the proxy.
+      contextId={process.env.IMJS_CONTEXT_ID}
+      iModelId={process.env.IMJS_IMODEL_ID}
+      changeSetId={process.env.IMJS_CHANGESET_ID} // Note: If the changeSetId is not supplied, the Viewer component will make a request to the iModelHub that does not go through the proxy.
       authConfig={{ oidcClient: NoSignInIAuthClient.oidcClient }}
       backend={{
         customBackend: {
