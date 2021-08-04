@@ -1,8 +1,8 @@
-# Express Server
+# Proxy Express Server
 
 This Express Server acts as a proxy for calling the iTwin Platform from a specific iTwin Viewer.
 
-To configure a viewer for a localhost version of this backend, use the following settings 
+To configure a viewer for a localhost version of this backend, use the following settings:
 
 ```json
 {
