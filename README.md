@@ -3,7 +3,7 @@
 The repository contains an example of how to use the iTwin Viewer with a custom, non-Bentley, Idp while leveraging the iTwin Platform.
 
 In this example, a proxy backend server is used to forward all requests to the iTwin Platform using an access token generated via client credentials (details [here](https://developer.bentley.com/apis/overview/authorization/) under the "Client Credential Flow" heading).
-The iTwin Viewer in this repository has been modified not require authentication to call the proxy to demonstrate.
+The iTwin Viewer in this repository has been modified to not require authentication to call the proxy to demonstrate.
 
 There are two parts in this repo:
 
