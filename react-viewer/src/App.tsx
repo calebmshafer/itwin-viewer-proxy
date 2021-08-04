@@ -3,7 +3,7 @@ import "./App.scss";
 import { Viewer, IModelBackend } from "@itwin/web-viewer-react";
 import React from "react";
 
-import { NoSignInIAuthClient } from "./TestClient";
+import { NoSignInIAuthClient } from "./NoSignInIAuthClient";
 
 const App: React.FC = () => {
   return (
