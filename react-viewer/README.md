@@ -6,7 +6,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 Prior to running the app, add a valid contextId, iModelId, changeSetId for your user in the .env file:
 
-```
+```sh
 # ---- Test ids ----
 IMJS_CONTEXT_ID = ""
 IMJS_IMODEL_ID = ""
