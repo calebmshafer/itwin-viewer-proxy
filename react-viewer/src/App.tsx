@@ -1,11 +1,18 @@
 import "./App.scss";
 
-import { Viewer, IModelBackend } from "@itwin/web-viewer-react";
-import React from "react";
+import { Viewer } from "@itwin/web-viewer-react";
+import React, { useEffect, useState } from "react";
 
-import { NoSignInIAuthClient } from "./NoSignInIAuthClient";
+import { MyTokenServerAuthClient } from "./MyTokenServerAuthClient";
 
 const App: React.FC = () => {
+  const [isAuthorized, setIsAuthorized] = useState(
+    MyTokenServerAuthClient.oidcClient
+      ? MyTokenServerAuthClient.oidcClient.isAuthorized
+      : false
+  );
+  const [tokenUrl] = useState(process.env.TOKEN_URL ?? "http://localhost:3001/getToken" ); // defaults to the localhost version
+
   if (!process.env.IMJS_CONTEXT_ID) {
     throw new Error(
       "Please add a valid context id to the .env file and restart the application. See the README for more information."
@@ -22,24 +29,33 @@ const App: React.FC = () => {
     );
   }
 
+  useEffect(() => {
+    const initOidc = async () => {
+      if (!MyTokenServerAuthClient.oidcClient) {
+        await MyTokenServerAuthClient.initializeOidc(tokenUrl);
+      }
+
+      try {
+        await MyTokenServerAuthClient.oidcClient.signIn();
+        setIsAuthorized(MyTokenServerAuthClient.oidcClient.isAuthorized);
+      } catch (error) {
+        // swallow the error. User can click the button to sign in
+      }
+    };
+    initOidc().catch((error) => console.error(error));
+  }, [tokenUrl]);
+
   return (
-    <Viewer
-      contextId={process.env.IMJS_CONTEXT_ID}
-      iModelId={process.env.IMJS_IMODEL_ID}
-      changeSetId={process.env.IMJS_CHANGESET_ID} // Note: If the changeSetId is not supplied, the Viewer component will make a request to the iModelHub that does not go through the proxy.
-      authConfig={{ oidcClient: NoSignInIAuthClient.oidcClient }}
-      backend={{
-        customBackend: {
-          rpcParams: {
-            info: {
-              title: IModelBackend.GeneralPurpose,
-              version: "v2.0",
-            },
-            uriPrefix: "http://localhost:3001", // Local url to the proxy sever
-          },
-        },
-      }}
-    />
+    <div className="viewer-container">
+      {isAuthorized && (
+        <Viewer
+          contextId={process.env.IMJS_CONTEXT_ID}
+          iModelId={process.env.IMJS_IMODEL_ID}
+          changeSetId={process.env.IMJS_CHANGESET_ID}
+          authConfig={{ oidcClient: MyTokenServerAuthClient.oidcClient }}
+        />
+      )}
+    </div>
   );
 };
 

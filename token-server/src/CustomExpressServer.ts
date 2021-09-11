@@ -1,4 +1,3 @@
-
 import * as express from "express";
 import { Server as HttpServer } from "http";
 import { AuthClient } from "./AuthClient";
@@ -23,7 +22,9 @@ export class CustomExpressServer {
   }
 
   protected _configureRoutes() {
-    this._app.get("getToken", async (req, res) => this._getToken(req, res));
+    this._app.get("/getToken", async (req, res) =>
+      this._getToken(req, res)
+    );
   }
 
   /**
@@ -52,5 +53,4 @@ export class CustomExpressServer {
       res.sendStatus(500);
     }
   }
-
 }
