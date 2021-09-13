@@ -16,7 +16,7 @@ Run,
 
 ## Setup the iTwin Viewer to use the proxy
 
-To configure a viewer for a localhost version of this backend, use the following settings:
+To configure a viewer for the localhost version of the proxy, make the following change to the `Viewer` component in [App.tsx](../react-viewer/src/App.tsx):
 
 ```jsx
 <Viewer

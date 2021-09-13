@@ -21,7 +21,7 @@ Run,
 
 ## Setup the iTwin Viewer to use the proxy
 
-To configure the viewer to use the token server , use the following settings:
+To configure the viewer to use the token server, make the following change to the `Viewer` component in [App.tsx](../react-viewer/src/App.tsx):
 
 ```jsx
 <Viewer
@@ -29,3 +29,5 @@ To configure the viewer to use the token server , use the following settings:
   authConfig={{ oidcClient: MyTokenServerAuthClient.oidcClient }}
 >
 ```
+
+If a custom port is defined in setting up the token server, provide the new port using `TOKEN_URL`. The default value is, `http://localhost:3001/getToken`.
