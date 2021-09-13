@@ -10,7 +10,7 @@ The first step in either implementation is registering a new client id as a "Ser
 
 > Don't forget to add `<CLIENT_ID>@apps.imsoidc.bentley.com` to your Project too!
 
-The client secret provided when creating the client is intended to be kept secret and not provided client-side. Therefore it is __strongly__ recommended to follow one of the two approaches to build a server-side component that manages the secret and avoid having to cache or bundle the secret into your web app. The server-side will hold the client secret created for your application and manages using the token.
+The client secret provided when creating the client is intended to be kept __secret__ and not used client-side. Therefore it is __strongly__ recommended to follow one of the two approaches to build a server-side component that manages the secret and avoid having to cache or bundle the secret into your web app. The server-side will hold the client secret created for your application and manages using the token.
 
 ## Server Side Implementations
 
@@ -18,14 +18,25 @@ The client secret provided when creating the client is intended to be kept secre
 
 The two different implementations;
 
-1. A proxy server that sits between the end user application and the iTwin Platform to forward all requests while swapping out the authentication header when sent to the platform. The proxy server is in charge of taking the incoming request and updating the authentication header with an access token that is generated using the client credentials workflow mentions above.
+1. The first approach is to use a proxy server between the end user application (e.g. iTwin Viewer) and the iTwin Platform to forward all requests while swapping out the authentication header when sent to the platform. The proxy server is in charge of taking the incoming request and updating the authentication header with an access token that is generated using the client credentials workflow mentions above.
 
     The [README](./proxy/README.md) for the proxy server details how to start the server and configure the iTwin Viewer in this repository to use it.
 
     While this example uses Express and Node, the proxy can be written in any server-side deployment model.
 
-    The iTwin Viewer, in [react-viewer](./react-viewer/README.md), can be configured to point to the proxy server and remove any required sign-in with a Bentley user account. This is implemented in in the `NoSignInIAuthClient.ts`.
+    An iTwin Viewer based app, in [react-viewer](./react-viewer/README.md), is configured to point to the proxy server instead of iTwin Platform directly and removes any required sign-in with a Bentley user account. The changes to the auth client are implemented in [NoSignInIAuthClient.ts](./react-viewer/src/NoSignInIAuthClient.ts).
 
     This example is using a no-sign-in workflow rather than a different Identity Provider but the concept is the same.
 
-2. A token server that 
+    > Warning: One caveat to this approach, which is handled better in example #2 is that the proxy server will need to emulate any and all calls that need to be made to the iTwin Platform. The only calls that are being currently proxied by this example are ones to the Visualization API and no others.
+
+2. The second approach uses a token server to hold the client id and client secret and provides an endpoint which can be called by an iTwin Viewer to get the jwt token required to call the iTwin Platform.
+
+    The [README](./token-server/README.md) for the token server details how to start the server and configure the iTwin Viewer in this repository to use it.
+
+    As #1, this example is written in Express and Node.js but can be written in any server-side deployment model.
+
+    This approach has a couple advantages over the approach laid out in #1.
+
+    1. Better performance, without the overhead of having to proxy all requests through an additional server that needs to scale and be maintained.
+    1. Lower maintenance overhead as the server-side portion doesn't need to always maintain the exact request and response formats that are used and maintained within iTwin.js itself. While providing more APIs without having to implement or mirror what the iTwin Platform.
