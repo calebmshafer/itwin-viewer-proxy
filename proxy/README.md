@@ -2,28 +2,36 @@
 
 This Express Server acts as a proxy for calling the iTwin Platform from a specific iTwin Viewer.
 
-To configure a viewer for a localhost version of this backend, use the following settings:
+## Setup proxy server
 
-```json
-{
-backend: {
-  customBackend: {
-    rpcParams: {
-      info: {
-        title: "general-purpose-imodeljs-backend",
-        version: "v2.0"
-      },
-      uriPrefix: "http://localhost:3001" // This must match the backend url
+Use the CLIENT_ID and CLIENT_SECRET created in the [client registration](../README.md#client-registration) to populate the values in the `.env`.
+
+Run,
+
+- `npm install`
+- `npm run build`
+- `npm start`
+- Note the port the server starts on, that will be used when configuring the Viewer.
+  - The PORT can be configured by setting the `PORT` in the `.env`
+
+## Setup the iTwin Viewer to use the proxy
+
+To configure a viewer for the localhost version of the proxy, make the following change to the `Viewer` component in [App.tsx](../react-viewer/src/App.tsx):
+
+```jsx
+<Viewer
+  // ... (iModel related information)
+  authConfig={{ oidcClient: NoSignInIAuthClient.oidcClient }}
+  backend={{
+    customBackend: {
+      rpcParams: {
+        info: {
+          title: "general-purpose-imodeljs-backend",
+          version: "v2.0"
+        },
+        uriPrefix: "http://localhost:3001" // This must match the backend url
+      }
     }
-  }
-}
-}
+  }}
+>
 ```
-
-## Client Registration
-
-OIDC configuration
-  Don't forget to add <CLIENT_ID>@apps.imsoidc.bentley.com to your CONNECT project too!
-
-Your CLIENT_ID and CLIENT_SECRET should both come from the [iTwin App Registration](https://developer.bentley.com/my-apps/) - be sure to create a "Service" type of client
-with the 'Visualization' API associations.

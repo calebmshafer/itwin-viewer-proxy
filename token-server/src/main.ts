@@ -21,8 +21,8 @@ import { CustomExpressServer } from "./CustomExpressServer";
       process.env.CLIENT_SECRET,
       "itwinjs"
     );
-    const visualizationUrl = process.env.VISUALIZATION_URL;
-    const server = new CustomExpressServer(oidcClient, visualizationUrl);
+
+    const server = new CustomExpressServer(oidcClient);
 
     await server.initialize(process.env.PORT ?? 3001);
     console.log("READY");
