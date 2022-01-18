@@ -1,21 +1,17 @@
 import "./App.scss";
 
-import { Viewer } from "@itwin/web-viewer-react";
-import React, { useEffect, useState } from "react";
+import { useAccessToken, Viewer } from "@itwin/web-viewer-react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { MyTokenServerAuthClient } from "./MyTokenServerAuthClient";
+import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 
 const App: React.FC = () => {
-  const [isAuthorized, setIsAuthorized] = useState(
-    MyTokenServerAuthClient.oidcClient
-      ? MyTokenServerAuthClient.oidcClient.isAuthorized
-      : false
-  );
   const [tokenUrl] = useState(process.env.TOKEN_URL ?? "http://localhost:3001/getToken" ); // defaults to the localhost version
 
-  if (!process.env.IMJS_CONTEXT_ID) {
+  if (!process.env.IMJS_ITWIN_ID) {
     throw new Error(
-      "Please add a valid context id to the .env file and restart the application. See the README for more information."
+      "Please add a valid iTwin id to the .env file and restart the application. See the README for more information."
     );
   }
   if (!process.env.IMJS_IMODEL_ID) {
@@ -23,36 +19,48 @@ const App: React.FC = () => {
       "Please add a valid iModel id to the .env file and restart the application. See the README for more information."
     );
   }
-  if (!process.env.IMJS_CHANGESET_ID) {
-    throw new Error(
-      "Please add a valid changeset id to the .env file and restart the application. See the README for more information."
-    );
-  }
+  // if (!process.env.IMJS_CHANGESET_ID) {
+  //   throw new Error(
+  //     "Please add a valid changeset id to the .env file and restart the application. See the README for more information."
+  //   );
+  // }
+
+  const authClient = useMemo(
+    () =>
+      new BrowserAuthorizationClient({
+        scope: "itwinjs imodels:read realitydata:read",
+        clientId: "spa-CTDkE2ZHAd9QjwuUug6ZCZXCo",
+        redirectUri: "http://localhost:3000/signin-callback",
+        postSignoutRedirectUri: "http://localhost:3000/logout",
+        responseType: "code",
+      }),
+    []
+  );
 
   useEffect(() => {
-    const initOidc = async () => {
-      if (!MyTokenServerAuthClient.oidcClient) {
-        await MyTokenServerAuthClient.initializeOidc(tokenUrl);
-      }
-
+    const init = async () => {
       try {
-        await MyTokenServerAuthClient.oidcClient.signIn();
-        setIsAuthorized(MyTokenServerAuthClient.oidcClient.isAuthorized);
-      } catch (error) {
-        // swallow the error. User can click the button to sign in
+        await authClient.signInSilent();
+      } catch {
+        await authClient.signIn();
       }
     };
-    initOidc().catch((error) => console.error(error));
-  }, [tokenUrl]);
+    init();
+  }, [authClient]);
+
+  const accessToken = useAccessToken();
+  console.log(accessToken)
 
   return (
     <div className="viewer-container">
-      {isAuthorized && (
+      {accessToken && (
         <Viewer
-          contextId={process.env.IMJS_CONTEXT_ID}
+          iTwinId={process.env.IMJS_ITWIN_ID}
           iModelId={process.env.IMJS_IMODEL_ID}
           changeSetId={process.env.IMJS_CHANGESET_ID}
-          authConfig={{ oidcClient: MyTokenServerAuthClient.oidcClient }}
+          // authClient={new MyTokenServerAuthClient()}
+          authClient={authClient}
+          enablePerformanceMonitors={true}
         />
       )}
     </div>
