@@ -6,18 +6,18 @@ There are two distinct ways of handling user identities when building an applica
 
 ## Client Registration
 
-The first step in either implementation is registering a new client id as a "Service" type in the [iTwin App Registration](https://developer.bentley.com/my-apps/) and add the `Visualization` and `iModels` API Association. This will provide a client id and client secret to use for getting an access token, via a [client credentials workflow](https://developer.bentley.com/apis/overview/authorization/#clientcredentialflow), to access the iTwin Platform.
+The first step is to register a new client as a "Service" type in the [iTwin App Registration](https://developer.bentley.com/my-apps/) and add the `Visualization` and `iModels` API Association. This will provide a client id and client secret to use for getting an access token, via a [client credentials workflow](https://developer.bentley.com/apis/overview/authorization/#clientcredentialflow), to access the iTwin Platform.
 
 > Don't forget to add `<CLIENT_ID>@apps.imsoidc.bentley.com` to your Project too!
 
-The client secret provided when creating the client is intended to be kept __secret__ and not used client-side. Therefore it is __strongly__ recommended to follow one of the two approaches to build a server-side component that manages the secret and avoid having to cache or bundle the secret into your web app. The server-side will hold the client secret created for your application and manages using the token.
+The client secret provided when creating the client is intended to be kept __secret__ and not used client-side. Therefore it is __strongly__ recommend to build a server-side component that manages the secret and avoid having to cache or bundle the secret into your web app. The server-side will hold the client secret created for your application and manages using the token.
 
 ## Server Side Implementation
 
 > __Important__: It is strongly recommended that any server-side component is placed behind a layer of authorization and/or authentication that fits your workflow and validates the user has access to what is being requested. However to simplify the example, this server will not be setup with any additional checking and essentially provide an "unprotected" endpoint.
 
 
-The recommended approach is to use a token server to hold the client id and client secret and provides an endpoint which can be called by an Auth Client for the iTwin Viewer to get the jwt token required to call the iTwin Platform.
+The recommended approach is to use a token server to hold the client id and client secret and provides an endpoint which can be called by an auth client for the iTwin Viewer to get the jwt token required to call the iTwin Platform.
 
 The [README](./token-server/README.md) for the token server details how to start the server and configure the iTwin Viewer in this repository to use it.
 

@@ -4,7 +4,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Environment Variables
 
-Prior to running the app, add a valid iTwinId, iModelId, changeSetId for your user in the .env file:
+Prior to running the app, add a valid iTwinId, iModelId, changesetId for your user in the .env file:
 
 ```sh
 # ---- Test ids ----
