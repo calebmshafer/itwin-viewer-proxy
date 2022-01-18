@@ -4,10 +4,18 @@ import { useAccessToken, Viewer } from "@itwin/web-viewer-react";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { MyTokenServerAuthClient } from "./MyTokenServerAuthClient";
-import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 
 const App: React.FC = () => {
-  const [tokenUrl] = useState(process.env.TOKEN_URL ?? "http://localhost:3001/getToken" ); // defaults to the localhost version
+  const [tokenUrl] = useState(process.env.TOKEN_URL ?? "http://localhost:3001/getToken"); // defaults to the localhost version
+
+  const authClient = useMemo(() => new MyTokenServerAuthClient(tokenUrl), [tokenUrl]);
+
+  useEffect(() => {
+    const init = async () => {
+      await authClient.initialize();
+    }
+    init().catch(console.error);
+  }, [authClient]);
 
   if (!process.env.IMJS_ITWIN_ID) {
     throw new Error(
@@ -25,29 +33,6 @@ const App: React.FC = () => {
   //   );
   // }
 
-  const authClient = useMemo(
-    () =>
-      new BrowserAuthorizationClient({
-        scope: "itwinjs imodels:read realitydata:read",
-        clientId: "spa-CTDkE2ZHAd9QjwuUug6ZCZXCo",
-        redirectUri: "http://localhost:3000/signin-callback",
-        postSignoutRedirectUri: "http://localhost:3000/logout",
-        responseType: "code",
-      }),
-    []
-  );
-
-  useEffect(() => {
-    const init = async () => {
-      try {
-        await authClient.signInSilent();
-      } catch {
-        await authClient.signIn();
-      }
-    };
-    init();
-  }, [authClient]);
-
   const accessToken = useAccessToken();
   console.log(accessToken)
 
@@ -58,7 +43,6 @@ const App: React.FC = () => {
           iTwinId={process.env.IMJS_ITWIN_ID}
           iModelId={process.env.IMJS_IMODEL_ID}
           changeSetId={process.env.IMJS_CHANGESET_ID}
-          // authClient={new MyTokenServerAuthClient()}
           authClient={authClient}
           enablePerformanceMonitors={true}
         />

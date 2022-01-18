@@ -1,12 +1,12 @@
 import * as express from "express";
 import { Server as HttpServer } from "http";
-import { AuthClient } from "./AuthClient";
-import { AccessToken } from "@bentley/itwin-client";
+import type { AccessToken } from "@itwin/core-bentley";
+import type { AuthorizationClient } from "@itwin/core-common";
 
 export class CustomExpressServer {
   protected _app: import("express").Application = express();
 
-  constructor(private _client: AuthClient) {  }
+  constructor(private _client: AuthorizationClient) {}
 
   protected _configureHeaders() {
     // enable CORS for all apis
@@ -22,9 +22,7 @@ export class CustomExpressServer {
   }
 
   protected _configureRoutes() {
-    this._app.get("/getToken", async (req, res) =>
-      this._getToken(req, res)
-    );
+    this._app.get("/getToken", async (req, res) => this._getToken(req, res));
   }
 
   /**
@@ -43,10 +41,9 @@ export class CustomExpressServer {
     });
   }
 
-  public async _getToken(_req: express.Request, res: express.Response) {
+  private async _getToken(_req: express.Request, res: express.Response) {
     try {
       const token: AccessToken = await this._client.getAccessToken();
-
       res.send(token);
     } catch (err) {
       console.log(err);
