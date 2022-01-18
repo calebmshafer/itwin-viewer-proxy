@@ -1,14 +1,12 @@
 import "./App.scss";
 
 import { useAccessToken, Viewer } from "@itwin/web-viewer-react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 
 import { MyTokenServerAuthClient } from "./MyTokenServerAuthClient";
 
 const App: React.FC = () => {
-  const [tokenUrl] = useState(process.env.TOKEN_URL ?? "http://localhost:3001/getToken"); // defaults to the localhost version
-
-  const authClient = useMemo(() => new MyTokenServerAuthClient(tokenUrl), [tokenUrl]);
+  const authClient = useMemo(() => new MyTokenServerAuthClient(), []);
 
   useEffect(() => {
     const init = async () => {

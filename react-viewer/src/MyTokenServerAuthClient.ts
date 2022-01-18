@@ -7,26 +7,18 @@ import {
 import { ViewerAuthorizationClient } from "@itwin/web-viewer-react";
 
 export class MyTokenServerAuthClient implements ViewerAuthorizationClient {
+  public readonly onAccessTokenChanged = new BeEvent<
+    (token: AccessToken) => void
+  >();
   protected _accessToken?: AccessToken;
-  protected _tokenUrl: string;
-
-  public constructor(tokenUrl: string) {
-    this.onAccessTokenChanged = new BeEvent();
-    this._tokenUrl = tokenUrl;
-  }
 
   public async initialize() {
-    if (!this._tokenUrl) {
-      throw new BentleyError(
-        AuthStatus.Error,
-        "Cannot initialize token server auth client without token url"
-      );
-    }
+    // defaults to the localhost version of the token server
+    const tokenUrl = process.env.TOKEN_URL ?? "http://localhost:3001/getToken";
     try {
-      const res = await fetch(this._tokenUrl);
+      const res = await fetch(tokenUrl);
       if (res) {
         const accessToken = await res.text();
-        console.log(accessToken);
         this._accessToken = accessToken;
         this.onAccessTokenChanged.raiseEvent(accessToken);
       }
@@ -34,10 +26,6 @@ export class MyTokenServerAuthClient implements ViewerAuthorizationClient {
       console.log(err);
     }
   }
-
-  public readonly onAccessTokenChanged = new BeEvent<
-    (token: AccessToken) => void
-  >();
 
   public async getAccessToken(): Promise<AccessToken> {
     if (!this._accessToken) {
