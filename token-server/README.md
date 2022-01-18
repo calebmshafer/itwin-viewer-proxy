@@ -26,7 +26,7 @@ To configure the viewer to use the token server, make the following change to th
 ```jsx
 <Viewer
   // ... (iModel related information)
-  authConfig={{ oidcClient: MyTokenServerAuthClient.oidcClient }}
+  authClient={myTokenServerAuthClient}
 >
 ```
 
