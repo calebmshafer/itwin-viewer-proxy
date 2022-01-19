@@ -1,6 +1,6 @@
 # Token Server
 
-The goal of the this token server is to provide an alternative example of how to implement a two-legged authentication workflow for interacting with the iTwin Platform and configure it for the iTwin Viewer.
+The goal of the this token server is to provide an example of how to implement a two-legged authentication workflow for interacting with the iTwin Platform and configure it for the iTwin Viewer.
 
 This server holds the client secret created for your application and manages issuing the token to a client-side application that will allow access to the
 the iTwin Platform. This will enforce a secure workflow when implementing the [client credentials workflow](https://developer.bentley.com/apis/overview/authorization/#clientcredentialflow).

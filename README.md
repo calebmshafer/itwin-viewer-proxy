@@ -1,6 +1,6 @@
 # Example of managing users while using the iTwin Viewer and iTwin Platform
 
-This repository contains examples of how to use the iTwin Viewer with a custom, non-Bentley, Idp while leveraging the iTwin Platform.
+This repository contains an example of how to use the iTwin Viewer with a custom, non-Bentley, IdP while leveraging the iTwin Platform.
 
 There are two distinct ways of handling user identities when building an application with the iTwin Platform; using Bentley identities and managing the identities yourself. This example provides two different implementations for securely handling managing identities of your application users.
 
