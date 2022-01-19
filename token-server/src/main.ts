@@ -1,7 +1,7 @@
 import { config } from "dotenv-flow";
 import * as dotenv_expand from "dotenv-expand";
-import { AuthClient } from "./AuthClient";
 import { CustomExpressServer } from "./CustomExpressServer";
+import { ServiceAuthorizationClient } from "@itwin/service-authorization";
 
 (async () => {
   const envResult = config();
@@ -16,13 +16,13 @@ import { CustomExpressServer } from "./CustomExpressServer";
 
   try {
     // Setup a client using the client credentials workflow.
-    const oidcClient = new AuthClient(
-      process.env.CLIENT_ID,
-      process.env.CLIENT_SECRET,
-      "itwinjs"
-    );
+    const authClient = new ServiceAuthorizationClient({
+      clientId: process.env.CLIENT_ID,
+      clientSecret: process.env.CLIENT_SECRET,
+      scope: "itwinjs imodels:read",
+    }); 
 
-    const server = new CustomExpressServer(oidcClient);
+    const server = new CustomExpressServer(authClient);
 
     await server.initialize(process.env.PORT ?? 3001);
     console.log("READY");
