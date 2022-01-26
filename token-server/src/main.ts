@@ -19,7 +19,7 @@ import { ServiceAuthorizationClient } from "@itwin/service-authorization";
     const authClient = new ServiceAuthorizationClient({
       clientId: process.env.CLIENT_ID,
       clientSecret: process.env.CLIENT_SECRET,
-      scope: "itwinjs imodels:read",
+      scope: "imodelaccess:read imodels:read",
     }); 
 
     const server = new CustomExpressServer(authClient);

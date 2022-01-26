@@ -4,6 +4,8 @@ import { Viewer } from "@itwin/web-viewer-react";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { MyTokenServerAuthClient } from "./MyTokenServerAuthClient";
+import { FillCentered } from "@itwin/core-react";
+import { ProgressLinear } from "@itwin/itwinui-react";
 
 const App: React.FC = () => {
   const myTokenServerAuthClient = useMemo(() => new MyTokenServerAuthClient(), []);
@@ -31,15 +33,20 @@ const App: React.FC = () => {
 
   return (
     <>
-      {accessToken && (
-        <Viewer
-          iTwinId={process.env.IMJS_ITWIN_ID}
-          iModelId={process.env.IMJS_IMODEL_ID}
-          changeSetId={process.env.IMJS_CHANGESET_ID}
-          authClient={myTokenServerAuthClient}
-          enablePerformanceMonitors={true}
-        />
+      {!accessToken && (
+        <FillCentered>
+          <div style={{ width: "400px" }}>
+            <ProgressLinear indeterminate={true} labels={["Signing in..."]} />
+          </div>
+        </FillCentered>
       )}
+      <Viewer
+        iTwinId={process.env.IMJS_ITWIN_ID}
+        iModelId={process.env.IMJS_IMODEL_ID}
+        changeSetId={process.env.IMJS_CHANGESET_ID}
+        authClient={myTokenServerAuthClient}
+        enablePerformanceMonitors={true}
+      />
     </>
   );
 };
