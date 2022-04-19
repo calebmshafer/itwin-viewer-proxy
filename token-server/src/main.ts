@@ -8,7 +8,7 @@ import { ServiceAuthorizationClient } from "@itwin/service-authorization";
   if (envResult.error) {
     throw envResult.error;
   }
-  dotenv_expand(envResult);
+  dotenv_expand.expand(envResult);
 
   if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
     throw new Error("CLIENT_ID and CLIENT_SECRET are required");
