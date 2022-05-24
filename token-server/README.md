@@ -19,7 +19,7 @@ Run,
 - Note the port the server starts on, that will be used when configuring the Viewer.
   - The PORT can be configured by setting the `PORT` in the `.env`
 
-## Setup the iTwin Viewer to use the proxy
+## Setup the iTwin Viewer to use the token server
 
 To configure the viewer to use the token server, make the following change to the `Viewer` component in [App.tsx](../react-viewer/src/App.tsx):
 
