@@ -13,7 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "@itwin/express-server": "^3.0.0",
-    "@itwin/service-authorization": "^0.6.1",
+    "@itwin/service-authorization": "^0.6.3",
     "dotenv": "^16.0.0",
     "dotenv-expand": "^8.0.3",
     "dotenv-flow": "^3.2.0",
