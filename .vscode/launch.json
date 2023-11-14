@@ -16,10 +16,10 @@
       "request": "launch",
       "name": "Launch proxy",
       "runtimeExecutable": "npm",
-      "cwd": "${workspaceFolder}/proxy",
+      "cwd": "${workspaceFolder}/http-proxy",
       "runtimeArgs": [
         "run-script",
-        "debug"
+        "dev"
       ],
       "port": 9229,
       "skipFiles": [

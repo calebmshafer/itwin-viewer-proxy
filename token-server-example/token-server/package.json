@@ -1,0 +1,31 @@
+{
+  "name": "token-server",
+  "version": "1.0.0",
+  "description": "Server-side component to manage providing an access token for the iTwin Platform.",
+  "main": "lib/main.js",
+  "scripts": {
+    "build": "tsc 1>&2",
+    "dev": "ts-node-dev ./src/main.ts",
+    "start": "node ./lib/main.js",
+    "debug": "node --inspect-brk=9229 ./lib/main.js",
+    "clean": "rimraf lib"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@itwin/express-server": "^4.2.3",
+    "@itwin/service-authorization": "^1.1.0",
+    "dotenv": "^16.0.0",
+    "dotenv-expand": "^8.0.3",
+    "dotenv-flow": "^3.2.0",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "@itwin/core-bentley": "^4.2.3",
+    "@itwin/core-common": "^4.2.3",
+    "@types/dotenv-flow": "^3.1.0",
+    "@types/express": "^4.17.9",
+    "rimraf": "^3.0.2",
+    "ts-node-dev": "^1.1.1",
+    "typescript": "~4.3.0"
+  }
+}
