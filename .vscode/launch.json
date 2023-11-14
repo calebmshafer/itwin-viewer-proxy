@@ -14,12 +14,12 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch proxy",
+      "name": "Launch token-server",
       "runtimeExecutable": "npm",
-      "cwd": "${workspaceFolder}/proxy",
+      "cwd": "${workspaceFolder}/token-server",
       "runtimeArgs": [
         "run-script",
-        "debug"
+        "dev"
       ],
       "port": 9229,
       "skipFiles": [
