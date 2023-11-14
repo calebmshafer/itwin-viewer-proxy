@@ -14,9 +14,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch proxy",
+      "name": "Launch token-server",
       "runtimeExecutable": "npm",
-      "cwd": "${workspaceFolder}/http-proxy",
+      "cwd": "${workspaceFolder}/token-server",
       "runtimeArgs": [
         "run-script",
         "dev"
